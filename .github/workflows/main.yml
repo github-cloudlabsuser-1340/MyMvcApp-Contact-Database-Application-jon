@@ -1,0 +1,39 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'  # Change this if you're using a different version
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Run Tests
+      run: dotnet test --no-build --verbosity normal
+
+    - name: Publish
+      run: dotnet publish --configuration Release --output ${{env.DOTNET_ROOT}}//my_app
+
+    - name: Deploy to Azure Web App
+      uses: actions/upload-artifact@v4
+      with:
+        app-name: .net-app
+        path: ${{env.DOTNET_ROOT}}//my_app
